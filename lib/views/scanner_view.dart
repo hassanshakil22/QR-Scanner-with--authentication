@@ -23,7 +23,7 @@ class _ScannerViewState extends State<ScannerView> {
         autoStart: false,
         detectionSpeed: DetectionSpeed.noDuplicates,
         returnImage: true,
-        cameraResolution: Size(double.infinity / 2, double.infinity / 2));
+        cameraResolution: const Size(720, 1280));
   }
 
   @override
@@ -48,74 +48,70 @@ class _ScannerViewState extends State<ScannerView> {
                 icon: const Icon(Icons.qr_code_2_sharp))
           ],
         ),
-        body: Stack(children: [
-          MobileScanner(
-            controller: _controller,
-            onDetect: (capture) {
-              final List<Barcode> barcodes = capture.barcodes;
-              for (var barcode in barcodes) {
-                print("barcode found : ${barcode.rawValue}");
-              }
-              final Uint8List? image = capture.image;
-              if (image != null) {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      String barcodeValue = barcodes.first.rawValue ??
-                          "barcode does'nt aquire any value";
-                      return AlertDialog(
-                        title: Row(
-                          children: [
-                            Spacer(),
-                            IconButton(
-                              icon: Icon(Icons.close), // Close button
-                              onPressed: () {
-                                Navigator.of(context).pop(); // Close the dialog
-                                setState(() {
-                                  _isScanning = false;
-                                  _controller.stop();
-                                });
-                              },
+        body: !_isScanning
+            ? Center(
+                child: ElevatedButton(
+                  onPressed: _startScanning,
+                  child: Text("Start Scan"),
+                ),
+              )
+            : MobileScanner(
+                controller: _controller,
+                onDetect: (capture) {
+                  final List<Barcode> barcodes = capture.barcodes;
+                  for (var barcode in barcodes) {
+                    print("barcode found : ${barcode.rawValue}");
+                  }
+                  final Uint8List? image = capture.image;
+                  if (image != null) {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          String barcodeValue = barcodes.first.rawValue ??
+                              "barcode does'nt aquire any value";
+                          return AlertDialog(
+                            title: Row(
+                              children: [
+                                Spacer(),
+                                IconButton(
+                                  icon: Icon(Icons.close), // Close button
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(); // Close the dialog
+                                    setState(() {
+                                      _isScanning = false;
+                                      _controller.stop();
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        actions: [
-                          Text(barcodeValue),
-                          Spacer(),
-                          IconButton(
-                              onPressed: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: barcodeValue));
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(const SnackBar(
-                                        content: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text("Copied to Clipboard"),
-                                    Icon(Icons.check_circle)
-                                  ],
-                                )));
-                              },
-                              icon: Icon(Icons.copy)),
-                        ],
-                        content: Image(image: MemoryImage(image)),
-                      );
-                    });
-              }
-            },
-          ),
-          if (_isScanning == false)
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: ElevatedButton(
-                onPressed: _startScanning,
-                child: Text("Start Scan"),
-              ),
-            ),
-        ]));
+                            actions: [
+                              Text(barcodeValue),
+                              Spacer(),
+                              IconButton(
+                                  onPressed: () {
+                                    Clipboard.setData(
+                                        ClipboardData(text: barcodeValue));
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(const SnackBar(
+                                            content: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Copied to Clipboard"),
+                                        Icon(Icons.check_circle)
+                                      ],
+                                    )));
+                                  },
+                                  icon: Icon(Icons.copy)),
+                            ],
+                            content: Image(image: MemoryImage(image)),
+                          );
+                        });
+                  }
+                },
+              ));
   }
 
   Future<void> _startScanning() async {

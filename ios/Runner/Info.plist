@@ -51,5 +51,11 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 <string>Why is my app authenticating using face id?</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+  <string>http</string>
+  <string>https</string>
+</array>
+
 </dict>
 </plist>

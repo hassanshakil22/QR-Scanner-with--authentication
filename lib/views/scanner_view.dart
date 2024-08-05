@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -15,6 +15,16 @@ class ScannerView extends StatefulWidget {
 class _ScannerViewState extends State<ScannerView> {
   late final MobileScannerController _controller;
   bool _isScanning = false;
+
+  void _launchUrl(String url) async {
+    Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Cannot launch URL")));
+    }
+  }
 
   @override
   void initState() {
@@ -59,9 +69,10 @@ class _ScannerViewState extends State<ScannerView> {
                 controller: _controller,
                 onDetect: (capture) {
                   final List<Barcode> barcodes = capture.barcodes;
-                  for (var barcode in barcodes) {
-                    print("barcode found : ${barcode.rawValue}");
-                  }
+                  //to get a barcode in the list of barcodes >> logically there has to be only one but since its the list we will have to iterate
+                  // for (var barcode in barcodes) {
+                  //   print("barcode found : ${barcode.rawValue}");
+                  // }
                   final Uint8List? image = capture.image;
                   if (image != null) {
                     showDialog(
@@ -87,7 +98,11 @@ class _ScannerViewState extends State<ScannerView> {
                               ],
                             ),
                             actions: [
-                              Text(barcodeValue),
+                              TextButton(
+                                  onPressed: () {
+                                    _launchUrl(barcodeValue);
+                                  },
+                                  child: Text(barcodeValue)),
                               Spacer(),
                               IconButton(
                                   onPressed: () {
